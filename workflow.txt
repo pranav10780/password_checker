@@ -1,0 +1,9 @@
+factors affecting password strength
+length(very important) complexity(upper and lower case words) uniqness(gonna be hard) specialchars nums
+
+rockyou.txt missing implimentation
+
+cmd line args
+help and warning for missing files handling instead of crashing
+
+gonna do in c myrr
