@@ -7,3 +7,6 @@ cmd line args
 help and warning for missing files handling instead of crashing
 
 gonna do in c myrr
+
+###
+fucked up the help text is done but the actual logic for checking and calculating all the args remain a prblm so flags is going to be done later
