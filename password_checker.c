@@ -3,11 +3,14 @@
 #include <unistd.h>
 
 void help(void);
+int file(const char *filename,char *password);
 
 int main(int argc, char *argv[]) {
 
 	//for getopt
 	int option;
+	char *filename;
+	int fflag = 0;
 
 	//checks if no args is given and prints out the help page
 	if(argc == 1){
@@ -19,13 +22,12 @@ int main(int argc, char *argv[]) {
 		switch(option){
 			case 'h':
 				help();
-				break;
+				return 0;
 			case 'f':
-				printf("Given file to process %s\n",optarg);
+				//read file name from -f flag
+				filename = optarg;
+				fflag = 1;
 				break;
-			case ':':
-				fprintf(stderr, "No argument is given\n");
-				return 1;
 			case '?':
 				fprintf(stderr, "Unknown option -%c\n",optopt);
 				return 1;	
@@ -37,13 +39,30 @@ int main(int argc, char *argv[]) {
 
 	//check if more that one positional args
 	if (remaining > 1) {
-	    fprintf(stderr, "Error: too many arguments\n");
-	    return 1;
+		fprintf(stderr, "Error: too many arguments\n");
+		return 1;
+	//check if no password is provided
+	} else if (remaining == 0){
+		fprintf(stderr, "Password not provided\n");
+		return 1;
 	}
 
 	//the actual password provided by the use
 	char *password = argv[optind];
-	printf("Password: %s\n",password);
+
+	//check if -f flag is used
+	if(fflag == 1){
+		int errorcode = file(filename,password);
+		if(errorcode == 1){
+			fprintf(stderr,"Filename must be of .txt extension\n");
+		} else if ( errorcode == 2){
+			fprintf(stderr,"File not found or not able to open\n");
+		} else if (errorcode == 3){
+			fprintf(stderr,"Password not found in wordlist\n");
+		} else if (errorcode == 0){
+			printf("Password found in wordlist\n");
+		}
+	}
 
 	return 0;
 }
@@ -52,4 +71,48 @@ void help(){
 	printf("usage: ./password_checker password\n");
 	printf("  options:\n    -h print this screen\n");
 	printf("    -f file.txt Use a file to check if the password already exists eg:rockyou.txt\n");
+}
+
+int file(const char *s,char *p){
+	size_t plen = strlen(p);
+	//pass for password ownership and +2 for newline addition and null terminator
+	char pass[plen+2];
+	int len = strlen(s);
+	char line[512];
+
+	//checks if the file name contains more than 4 characters cause .txt extension needs more than 4 letters
+	if (len < 4){
+		return 1;
+	}
+	//checking the extension type
+	char *ext = strrchr(s,'.');
+	if(!ext){
+		return 1;
+	} else {
+		if(strcmp(ext,".txt") != 0){
+			return 1;
+		}
+	}
+
+	//creating a copy of password with a newline for wordlist checking
+	memcpy(pass,p,plen);
+	//add newline to password for direct comparisons
+	pass[plen] = '\n';
+	pass[plen+1] = '\0';
+
+	//opening file
+	FILE *f = fopen(s,"r");
+	if(f == NULL)
+		return 2;
+
+	//take data from file line by line
+	while(fgets(line,sizeof(line),f)){
+		if(strcmp(line,pass) == 0){
+			fclose(f);
+			return 0;
+		}
+	}
+
+	fclose(f);
+	return 3;
 }
