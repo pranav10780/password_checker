@@ -1,9 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
+##########################@@@@@@@@@@@@@@@@@@@@@@@@@
+if -f is empty not able to throw an error
 void help(void);
 int file(const char *filename,char *password);
+int strength(char *password);
+
 
 int main(int argc, char *argv[]) {
 
@@ -60,8 +65,19 @@ int main(int argc, char *argv[]) {
 		} else if (errorcode == 3){
 			fprintf(stderr,"Password not found in wordlist\n");
 		} else if (errorcode == 0){
-			printf("Password found in wordlist\n");
+			printf("Password found in wordlist!!!!\n");
+		} else if(errorcode == 4){
+			fprintf(stderr,"File name not specified\n");
 		}
+	}
+
+	//checking password strength
+	int score = strength(password);
+	//the max score possible is 7
+	if(score>=4){
+		printf("Score:%d/7\tVery strong password\n",score);
+	}else{
+		printf("Score:%d/7\tWeak password\n",score);
 	}
 
 	return 0;
@@ -74,6 +90,11 @@ void help(){
 }
 
 int file(const char *s,char *p){
+	//checks if a file name was passed
+	if(s==NULL){
+		return 4;
+	}
+
 	size_t plen = strlen(p);
 	//pass for password ownership and +2 for newline addition and null terminator
 	char pass[plen+2];
@@ -115,4 +136,54 @@ int file(const char *s,char *p){
 
 	fclose(f);
 	return 3;
+}
+
+int strength(char *p){
+	//final password strength score to be returned
+	int score = 0;
+	//a coutning variable
+	int i = 0;
+	int low = 0;
+
+	//check for password length
+	size_t plen = strlen(p);
+	if(plen >= 8){
+		score+=3;
+	}
+
+	//check if capital letters is available
+	for(i=0;p[i]!='\0';i++){
+		if(isupper(p[i])){
+			score++;
+			break;
+		}
+	}
+
+	//check if atleast 3 small letter characters
+	for(i=0;p[i]!='\0';i++){
+		if(islower(p[i])){
+			low++;
+		}
+	}
+	if(low>=3){
+		score++;
+	}
+
+	//checking if special character exists
+	for(i=0;p[i]!='\0';i++){
+		if(!isalnum(p[i])){
+			score++;
+			break;
+		}
+	}
+
+	//check if one digit is present
+	for(i=0;p[i]!='\0';i++){
+		if(isdigit(p[i])){
+			score++;
+			break;
+		}
+	}
+
+	return score;
 }
