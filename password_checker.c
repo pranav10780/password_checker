@@ -3,8 +3,6 @@
 #include <unistd.h>
 #include <ctype.h>
 
-##########################@@@@@@@@@@@@@@@@@@@@@@@@@
-if -f is empty not able to throw an error
 void help(void);
 int file(const char *filename,char *password);
 int strength(char *password);
@@ -33,6 +31,9 @@ int main(int argc, char *argv[]) {
 				filename = optarg;
 				fflag = 1;
 				break;
+			case ':':
+				fprintf(stderr,"Missing argument for option -%c\n",optopt);
+				return 1;
 			case '?':
 				fprintf(stderr, "Unknown option -%c\n",optopt);
 				return 1;	
@@ -66,8 +67,6 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr,"Password not found in wordlist\n");
 		} else if (errorcode == 0){
 			printf("Password found in wordlist!!!!\n");
-		} else if(errorcode == 4){
-			fprintf(stderr,"File name not specified\n");
 		}
 	}
 
@@ -90,10 +89,6 @@ void help(){
 }
 
 int file(const char *s,char *p){
-	//checks if a file name was passed
-	if(s==NULL){
-		return 4;
-	}
 
 	size_t plen = strlen(p);
 	//pass for password ownership and +2 for newline addition and null terminator
