@@ -7,9 +7,7 @@ void help(void);
 int file(const char *filename,char *password);
 int strength(char *password);
 
-
 int main(int argc, char *argv[]) {
-
 	//for getopt
 	int option;
 	char *filename;
@@ -20,7 +18,7 @@ int main(int argc, char *argv[]) {
 		help();
 		return 0;
 	}
-	//need to use optget and redo all of the flag logic manually
+	//flag parsing
 	while((option = getopt(argc, argv, ":hf:")) != -1){
 		switch(option){
 			case 'h':
@@ -40,10 +38,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	//to only count the positional args (password) and check if it is supplied or more than one optional args
-	int remaining = argc - optind;
-
 	//check if more that one positional args
+	int remaining = argc - optind;
 	if (remaining > 1) {
 		fprintf(stderr, "Error: too many arguments\n");
 		return 1;
@@ -53,7 +49,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	//the actual password provided by the use
+	//the actual password provided by the user
 	char *password = argv[optind];
 
 	//check if -f flag is used
@@ -136,7 +132,7 @@ int file(const char *s,char *p){
 int strength(char *p){
 	//final password strength score to be returned
 	int score = 0;
-	//a coutning variable
+	//coutning variable
 	int i = 0;
 	int low = 0;
 
