@@ -9,6 +9,9 @@ A simple cli tool which takes password from command line and assess its strength
 - **Comprehensive checks**:
   - Prioritied lenght of password as main source of strength
   - Checks for uppercase, lowercase, digits, special characters, etc
+- **Output formats**:
+  - Json supported
+  - Xml supported(coming soon)
 
 ## Installation
 1. Clone the repo:
@@ -38,6 +41,11 @@ usage: ./password_checker password
 2. Check password is in a wordlist
 ```bash
 ./password_checker helo -f rockyou.txt
+```
+
+4. Take the output in json format
+```bash
+./password_checker -f abc.txt -o json helo
 ```
 
 3. Printing the help screen

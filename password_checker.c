@@ -3,15 +3,20 @@
 #include <unistd.h>
 #include <ctype.h>
 
+//json user input sanitization
+//xml option
 void help(void);
 int file(const char *filename,char *password);
 int strength(char *password);
+void tojson(int score,char *password,int errorcode);
 
 int main(int argc, char *argv[]) {
 	//for getopt
 	int option;
 	char *filename;
 	int fflag = 0;
+	//0 - normal,1 - json,2 -xml
+	int output = 0;
 
 	//checks if no args is given and prints out the help page
 	if(argc == 1){
@@ -19,7 +24,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 	//flag parsing
-	while((option = getopt(argc, argv, ":hf:")) != -1){
+	while((option = getopt(argc, argv, ":hf:o:")) != -1){
 		switch(option){
 			case 'h':
 				help();
@@ -28,6 +33,16 @@ int main(int argc, char *argv[]) {
 				//read file name from -f flag
 				filename = optarg;
 				fflag = 1;
+				break;
+			case 'o':
+				//read output format
+				if(strcmp(optarg,"json") == 0){
+					output = 1;
+				}else if(strcmp(optarg,"xml") == 0){
+					output = 2;
+				}else{
+					output = 0;
+				}
 				break;
 			case ':':
 				fprintf(stderr,"Missing argument for option -%c\n",optopt);
@@ -51,17 +66,18 @@ int main(int argc, char *argv[]) {
 
 	//the actual password provided by the user
 	char *password = argv[optind];
+	int errorcode = -1;
 
 	//check if -f flag is used
 	if(fflag == 1){
-		int errorcode = file(filename,password);
+		errorcode = file(filename,password);
 		if(errorcode == 1){
 			fprintf(stderr,"Filename must be of .txt extension\n");
 		} else if ( errorcode == 2){
 			fprintf(stderr,"File not found or not able to open\n");
-		} else if (errorcode == 3){
-			fprintf(stderr,"Password not found in wordlist\n");
-		} else if (errorcode == 0){
+		} else if (errorcode == 3 && output == 0){
+			printf("Password not found in wordlist\n");
+		} else if (errorcode == 0 && output == 0){
 			printf("Password found in wordlist!!!!\n");
 		}
 	}
@@ -69,12 +85,17 @@ int main(int argc, char *argv[]) {
 	//checking password strength
 	int score = strength(password);
 	//the max score possible is 7
-	if(score>=4){
-		printf("Score:%d/7\tVery strong password\n",score);
-	}else{
-		printf("Score:%d/7\tWeak password\n",score);
+	
+	//for normal output execution
+	if(output == 0){
+		if(score>=4){
+			printf("Score:%d/7\tVery strong password\n",score);
+		}else{
+			printf("Score:%d/7\tWeak password\n",score);
+		}
+	}else if(output == 1){
+		tojson(score,password,errorcode);
 	}
-
 	return 0;
 }
 
@@ -82,6 +103,7 @@ void help(){
 	printf("usage: ./password_checker password\n");
 	printf("  options:\n    -h print this screen\n");
 	printf("    -f file.txt Use a file to check if the password already exists eg:rockyou.txt\n");
+	printf("    -o json|xml Output format\n");
 }
 
 int file(const char *s,char *p){
@@ -177,4 +199,22 @@ int strength(char *p){
 	}
 
 	return score;
+}
+
+void tojson(int score,char *password,int errorcode){
+	const char *strength = (score >= 4) ? "strong" : "weak";
+	int plen = strlen(password);
+	char password_in_file[10];
+
+	if(errorcode == -1){
+		strcpy(password_in_file,"null");
+	}else if(errorcode == 0){
+		strcpy(password_in_file,"true");
+	}else{
+		strcpy(password_in_file,"false");
+	}
+
+
+	//directly printing everyting to stdout
+	printf("{\n\t\"password\" : \"%s\",\n\t\"score\" : %d,\n\t\"strength\" : \"%s\",\n\t\"length\" : %d,\n\t\"password_in_file\" : %s\n}\n",password,score,strength,plen,password_in_file);
 }
