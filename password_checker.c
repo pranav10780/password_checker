@@ -214,6 +214,19 @@ void tojson(int score,char *password,int errorcode){
 		strcpy(password_in_file,"false");
 	}
 
+	//create a copy of password
+	char copy[strlen(password)+2048];
+	for(int i =0;i<strlen(copy);i++){
+		if(copy[i] == '"'){
+			copy[i] = '\\';
+			copy[i+1] = '"';
+			i++;
+		}else if(copy[i] == '\\'){
+			copy[i] = '\\';
+			copy[i+1] = '\\';
+			i++;
+		}
+	}
 
 	//directly printing everyting to stdout
 	printf("{\n\t\"password\" : \"%s\",\n\t\"score\" : %d,\n\t\"strength\" : \"%s\",\n\t\"length\" : %d,\n\t\"password_in_file\" : %s\n}\n",password,score,strength,plen,password_in_file);
