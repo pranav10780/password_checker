@@ -58,3 +58,6 @@ usage: ./password_checker password
 ```bash
 ./password_checker -h
 ```
+## Note
+- The -f flag will not work in windows 
+- This project is supposed to be security focused and not for actual use please use alternatives
