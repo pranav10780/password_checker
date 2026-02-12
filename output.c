@@ -3,7 +3,6 @@
 
 //a file for the code to be run inside the -o flag
 
-
 void tojson(int score,const char *password,int errorcode){
 	const char *strength = (score >= 4) ? "strong" : "weak";
 	int plen = strlen(password);
@@ -17,26 +16,50 @@ void tojson(int score,const char *password,int errorcode){
 		strcpy(password_in_file,"false");
 	}
 
-	//create a copy of password
-	char copy[strlen(password)+1];
-	strcpy(copy,password);
 	//new buffer for escaped string
-	//copy x 2 cus just in case every character is / and causes double // everywhere and +1 for \0
-	char buff[strlen(copy)*2+1];
+	//password x 2 cus just in case every character is / and causes double // everywhere and +1 for \0
+	char buff[plen*2+1];
 
-	//input sanitization logic
+	//Json escape character parsing
 	int j = 0;
-	for (int i = 0; copy[i] != '\0'; i++) {
-		if (copy[i] == '"' || copy[i] == '\\') {
-			//THIS is very important there is a difference between j++ and ++j if the below statment had ++j the 
-			//variable j would have updated first and then written the value one step ahead of the intended
-			//index but since it is j++ the below expression/line is processed aka the value is assigned to 
-			//buff at the required index and then only it increments the var j
-			//This is basic but i had a hard time and if u ever stumble on to this code please keep this in mind
-			//before changing the input sanitization of json
-			buff[j++] = '\\';
+	for (int i = 0; password[i] != '\0'; i++) {
+		switch(password[i]){
+			case '"':
+				buff[j++] = '\\';
+				buff[j++] = '"';
+				break;
+			case '\\':
+				buff[j++] = '\\';
+				buff[j++] = '\\';
+				break;
+			case '/':
+				buff[j++] = '\\';
+				buff[j++] = '/';
+				break;
+			case '\b':
+				buff[j++] = '\\';
+				buff[j++] = 'b';
+				break;
+			case '\f':
+				buff[j++] = '\\';
+				buff[j++] = 'f';
+				break;
+			case '\n':
+				buff[j++] = '\\';
+				buff[j++] = 'n';
+				break;
+			case '\r':
+				buff[j++] = '\\';
+				buff[j++] = 'r';
+				break;
+			case '\t':
+				buff[j++] = '\\';
+				buff[j++] = 't';
+				break;
+			default:
+				buff[j++] = password[i];
+				break;
 		}
-		buff[j++] = copy[i];
 	}
 	buff[j] = '\0';
 
