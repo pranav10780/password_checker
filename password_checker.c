@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 	int option;
 	char *filename;
 	int fflag = 0;
-	//0 - normal,1 - json
+	//0 - normal,1 - json,2 - xml
 	int output = 0;
 
 	//checks if no args is given and prints out the help page
@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 				//read output format
 				if(strcmp(optarg,"json") == 0){
 					output = 1;
+				}else if (strcmp(optarg,"xml") == 0){
+					output = 2;
 				}else{
 					output = 0;
 				}
@@ -91,6 +93,8 @@ int main(int argc, char *argv[]) {
 		}
 	}else if(output == 1){
 		tojson(score,password,errorcode);
+	}else if(output == 2){
+		toxml(score,password,errorcode);
 	}
 	return 0;
 }
