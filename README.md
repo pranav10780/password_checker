@@ -11,7 +11,6 @@ A simple cli tool which takes password from command line and assess its strength
   - Checks for uppercase, lowercase, digits, special characters, etc
 - **Output formats**:
   - Json supported
-  - Xml supported(coming soon)
 
 ## Installation
 1. Clone the repo:

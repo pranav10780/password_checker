@@ -4,8 +4,6 @@
 #include <ctype.h>
 #include "output.h"
 
-//json user input sanitization
-//xml option
 void help(void);
 int file(const char *filename,char *password);
 int strength(char *password);
@@ -15,7 +13,7 @@ int main(int argc, char *argv[]) {
 	int option;
 	char *filename;
 	int fflag = 0;
-	//0 - normal,1 - json,2 -xml
+	//0 - normal,1 - json
 	int output = 0;
 
 	//checks if no args is given and prints out the help page
@@ -38,8 +36,6 @@ int main(int argc, char *argv[]) {
 				//read output format
 				if(strcmp(optarg,"json") == 0){
 					output = 1;
-				}else if(strcmp(optarg,"xml") == 0){
-					output = 2;
 				}else{
 					output = 0;
 				}
@@ -103,7 +99,7 @@ void help(){
 	printf("usage: ./password_checker password\n");
 	printf("  options:\n    -h print this screen\n");
 	printf("    -f file.txt Use a file to check if the password already exists eg:rockyou.txt\n");
-	printf("    -o json|xml Output format\n");
+	printf("    -o json Output format\n");
 }
 
 int file(const char *s,char *p){
