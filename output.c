@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 //a file for the code to be run inside the -o flag
 
 void tojson(int score,const char *password,int errorcode){
 	const char *strength = (score >= 4) ? "strong" : "weak";
-	int plen = strlen(password);
+	size_t plen = strlen(password);
 	char password_in_file[6]; //length of false is 5 + 1 for \0
 
 	if(errorcode == -1){
@@ -16,13 +18,24 @@ void tojson(int score,const char *password,int errorcode){
 		strcpy(password_in_file,"false");
 	}
 
+	//checking if plen is larger than max size
+	if(plen > (SIZE_MAX - 1)/2){
+		fprintf(stderr, "Input too large\n");
+		return;
+	}
+
+	//using heap to avoid vlas
+	size_t max =  plen * 2 + 1;
 	//new buffer for escaped string
-	//password x 2 cus just in case every character is / and causes double // everywhere and +1 for \0
-	char buff[plen*2+1];
+	char *buff = malloc(max);
+	if(!buff){
+		fprintf(stderr,"Memory allocation failure");
+		return;
+	}
 
 	//Json escape character parsing
-	int j = 0;
-	for (int i = 0; password[i] != '\0'; i++) {
+	size_t j = 0;
+	for (size_t i = 0; password[i] != '\0'; i++) {
 		switch(password[i]){
 			case '"':
 				buff[j++] = '\\';
@@ -64,12 +77,15 @@ void tojson(int score,const char *password,int errorcode){
 	buff[j] = '\0';
 
 	//directly printing everyting to stdout
-	printf("{\n\t\"password\" : \"%s\",\n\t\"score\" : %d,\n\t\"strength\" : \"%s\",\n\t\"length\" : %d,\n\t\"password_in_file\" : %s\n}\n",buff,score,strength,plen,password_in_file);
+	printf("{\n\t\"password\" : \"%s\",\n\t\"score\" : %d,\n\t\"strength\" : \"%s\",\n\t\"length\" : %zu,\n\t\"password_in_file\" : %s\n}\n",buff,score,strength,plen,password_in_file);
+
+	//freeing memory
+	free(buff);
 }
 
 void toxml(int score,const char *password,int errorcode){
 	const char *strength = (score >= 4) ? "strong" : "weak";
-	int plen = strlen(password);
+	size_t plen = strlen(password);
 	char password_in_file[6]; //length of false is 5 + 1 for \0
 
 	if(errorcode == -1){
@@ -80,13 +96,23 @@ void toxml(int score,const char *password,int errorcode){
 		strcpy(password_in_file,"false");
 	}
 
+	//checking if plen is larger than max size
+	if(plen > (SIZE_MAX - 1)/6){
+		fprintf(stderr, "Input too large\n");
+		return;
+	}
+	//using heap instead of vlas
+	size_t max = plen * 6 + 1;
 	//new buffer for escaped string
-	//password x 2 cus just in case every character is / and causes double // everywhere and +1 for \0
-	char buff[plen*6+1];
+	char *buff = malloc(max);
+	if(!buff){
+		fprintf(stderr,"Memory allocation failed");
+		return;
+	}
 
 	//Json escape character parsing
-	int j = 0;
-	for (int i = 0; password[i] != '\0'; i++) {
+	size_t j = 0;
+	for (size_t i = 0; password[i] != '\0'; i++) {
 		switch(password[i]){
 			case '<':
 				strcpy(&buff[j],"&lt;");
@@ -118,10 +144,13 @@ void toxml(int score,const char *password,int errorcode){
 	buff[j] = '\0';
 
 	//the actual output printing
-	printf("<Password>\n\t<password>%s</password>\n\t<score>%d</score>\n\t<strength>%s</strength>\n\t<length>%d</length>\n",buff,score,strength,plen);
+	printf("<Password>\n\t<password>%s</password>\n\t<score>%d</score>\n\t<strength>%s</strength>\n\t<length>%zu</length>\n",buff,score,strength,plen);
 	if(strcmp(password_in_file,"null") != 0){
 		printf("\t<password_in_file>%s</password_in_file>\n",password_in_file);
 	}
 
 	printf("</Password>\n");
+
+	//freeing memory
+	free(buff);
 }

@@ -2,11 +2,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "output.h"
 
 void help(void);
-int file(const char *filename,char *password);
-int strength(char *password);
+int file(const char *filename,const char *password);
+int strength(const char *password);
 
 int main(int argc, char *argv[]) {
 	//for getopt
@@ -39,7 +40,8 @@ int main(int argc, char *argv[]) {
 				}else if (strcmp(optarg,"xml") == 0){
 					output = 2;
 				}else{
-					output = 0;
+					fprintf(stderr, "Unknown output format\n");
+					return 1;
 				}
 				break;
 			case ':':
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	//the actual password provided by the user
-	char *password = argv[optind];
+	const char *password = argv[optind];
 	int errorcode = -1;
 
 	//check if -f flag is used
@@ -106,19 +108,10 @@ void help(){
 	printf("    -o json Output format\n");
 }
 
-int file(const char *s,char *p){
+int file(const char *s,const char *p){
 
 	size_t plen = strlen(p);
-	//pass for password ownership and +2 for newline addition and null terminator
-	char pass[plen+2];
-	int len = strlen(s);
-	char line[512];
 
-	//checks if the file name contains more than 4 characters cause .txt extension needs more than 4 letters
-	if (len < 4){
-		return 1;
-	}
-	//checking the extension type
 	char *ext = strrchr(s,'.');
 	if(!ext){
 		return 1;
@@ -128,6 +121,13 @@ int file(const char *s,char *p){
 		}
 	}
 
+	//pass for password ownership and +2 for newline addition and null terminator
+	//heap instead of vlas
+	char *pass = malloc(plen + 2);
+	if (!pass) return 2;
+
+	char line[512];
+
 	//creating a copy of password with a newline for wordlist checking
 	memcpy(pass,p,plen);
 	//add newline to password for direct comparisons
@@ -136,26 +136,30 @@ int file(const char *s,char *p){
 
 	//opening file
 	FILE *f = fopen(s,"r");
-	if(f == NULL)
+	if(f == NULL){
+		free(pass);
 		return 2;
+	}
 
 	//take data from file line by line
 	while(fgets(line,sizeof(line),f)){
 		if(strcmp(line,pass) == 0){
 			fclose(f);
+			free(pass);
 			return 0;
 		}
 	}
 
 	fclose(f);
+	free(pass);
 	return 3;
 }
 
-int strength(char *p){
+int strength(const char *p){
 	//final password strength score to be returned
 	int score = 0;
 	//coutning variable
-	int i = 0;
+	size_t i = 0;
 	int low = 0;
 
 	//check for password length
@@ -166,7 +170,7 @@ int strength(char *p){
 
 	//check if capital letters is available
 	for(i=0;p[i]!='\0';i++){
-		if(isupper(p[i])){
+		if(isupper((unsigned char)p[i])){
 			score++;
 			break;
 		}
@@ -174,7 +178,7 @@ int strength(char *p){
 
 	//check if atleast 3 small letter characters
 	for(i=0;p[i]!='\0';i++){
-		if(islower(p[i])){
+		if(islower((unsigned char)p[i])){
 			low++;
 		}
 	}
@@ -184,7 +188,7 @@ int strength(char *p){
 
 	//checking if special character exists
 	for(i=0;p[i]!='\0';i++){
-		if(!isalnum(p[i])){
+		if(!isalnum((unsigned char)p[i])){
 			score++;
 			break;
 		}
@@ -192,7 +196,7 @@ int strength(char *p){
 
 	//check if one digit is present
 	for(i=0;p[i]!='\0';i++){
-		if(isdigit(p[i])){
+		if(isdigit((unsigned char)p[i])){
 			score++;
 			break;
 		}
