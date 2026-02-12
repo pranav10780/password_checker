@@ -105,7 +105,7 @@ void help(){
 	printf("usage: ./password_checker password\n");
 	printf("  options:\n    -h print this screen\n");
 	printf("    -f file.txt Use a file to check if the password already exists eg:rockyou.txt\n");
-	printf("    -o json Output format\n");
+	printf("    -o json|xml Output format\n");
 }
 
 int file(const char *s,const char *p){

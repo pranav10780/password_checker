@@ -11,6 +11,8 @@ A simple cli tool which takes password from command line and assess its strength
   - Checks for uppercase, lowercase, digits, special characters, etc
 - **Output formats**:
   - Json supported
+  - Xml supported
+- Uses heap instead of vlas with proper freeing of memory
 
 ## Installation
 1. Clone the repo:
@@ -21,7 +23,7 @@ cd password_checker
 
 2. Compiling:
 ```bash
-gcc password_checker.c -o password_checker
+make
 ```
 ## Usage
 ```bash
@@ -29,6 +31,7 @@ usage: ./password_checker password
   options:
     -h print this screen
     -f file.txt Use a file to check if the password already exists eg:rockyou.txt
+    -o json|xml Output format
 ```
 
 ## Examples
@@ -42,12 +45,16 @@ usage: ./password_checker password
 ./password_checker helo -f rockyou.txt
 ```
 
-4. Take the output in json format
+3. Take the output in json format
 ```bash
-./password_checker -f abc.txt -o json helo
+./password_checker -o json helo
 ```
 
-3. Printing the help screen
+4. Take the output in xml format
+```bash
+./password_checker -o xml helsai
+```
+5. Printing the help screen
 ```bash
 ./password_checker -h
 ```
